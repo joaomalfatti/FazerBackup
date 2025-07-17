@@ -17,11 +17,11 @@ def encontrar_unidade_livre():
 
 def mapear_unidade(host, usuario, senha):
     """Mapeia o disco C: do computador remoto usando uma unidade livre"""
-    print(f"\n Conectando ao computador {host}...")
+    print(f"\n  Conectando ao computador {host}...")
     
     drive_letter = encontrar_unidade_livre()
     if not drive_letter:
-        print(" Todas as unidades de rede estão em uso. Libere uma unidade e tente novamente.")
+        print("  Todas as unidades de rede estão em uso. Libere uma unidade e tente novamente.")
         return None
     
     comando = f'net use {drive_letter} \\\\{host}\\C$ {senha} /user:{usuario} /persistent:no'
@@ -30,10 +30,10 @@ def mapear_unidade(host, usuario, senha):
     os.system("cls")
 
     if resultado == 0:
-        print(f" =+=+= Conexão estabelecida (Unidade {drive_letter} mapeada para \\\\{host}\\C$) =+=+=")
+        print(f"  Conexão estabelecida! (Unidade {drive_letter} mapeada para \\\\{host}\\C$)")
         return drive_letter
     
-    print("\n Falha na conexão. Possíveis causas:")
+    print("\n  Falha na conexão. Verifique:")
     print(f"- Código do erro: {resultado}")
     print("- Credenciais incorretas ou sem privilégios")
     print("- Compartilhamento C$ não habilitado")
@@ -41,11 +41,11 @@ def mapear_unidade(host, usuario, senha):
 
 def listar_usuarios(drive_letter):
     """Lista usuários disponíveis para backup"""
-    print("\n Analisando usuários disponíveis...")
+    print("\n  Analisando usuários disponíveis...")
     users_path = os.path.join(drive_letter, 'Users')
     
     if not os.path.exists(users_path):
-        print(" Pasta Users não encontrada no computador remoto")
+        print("  Pasta 'Users' não encontrada no computador remoto")
         return []
     
     usuarios = []
@@ -64,24 +64,20 @@ def listar_usuarios(drive_letter):
                 usuarios.append({'nome': item, 'tamanho': 'Tamanho não disponível'})
     
     if not usuarios:
-        print(" Nenhum usuário encontrado (exceto pastas padrão)")
+        print("  Nenhum usuário encontrado (exceto pastas padrão)")
     else:
-        print(" Usuários disponíveis para backup:")
+        print("\n  Usuários disponíveis para backup:")
         for i, user in enumerate(usuarios, 1):
             print(f" {i}. {user['nome']} ({user['tamanho']})")
     
     return usuarios
 
-def fazer_backup(origem, destino):
-    """Executa o backup de fato"""
-    print(f"\n Iniciando backup de {origem} para {destino}...")
-    try:
-        shutil.copytree(origem, destino, dirs_exist_ok=True)
-        print(" Backup concluído com sucesso!")
-        return True
-    except Exception as e:
-        print(f" Erro durante o backup: {e}")
-        return False
+def calcular_tamanho_pasta(pasta):
+    """Calcula o número total de arquivos em uma pasta"""
+    total = 0
+    for root, dirs, files in os.walk(pasta):
+        total += len(files)
+    return total
 
 def mostrar_barra_progresso(progresso, total, largura=40):
     """Mostra uma barra de progresso visual"""
@@ -92,28 +88,21 @@ def mostrar_barra_progresso(progresso, total, largura=40):
     if progresso == total:
         print()
 
-def calcular_tamanho_pasta(pasta):
-    """Calcula o número total de arquivos em uma pasta"""
-    total = 0
-    for root, dirs, files in os.walk(pasta):
-        total += len(files)
-    return total
-
 def fazer_backup(origem, destino):
     """Executa o backup com feedback visual"""
-    print(f"\n Origem: {origem}")
-    print(f" Destino: {destino}\n")
+    print(f"\n  Origem: {origem}")
+    print(f"  Destino: {destino}\n")
     
     try:
         # Calcular total de arquivos
-        print(" Calculando total de arquivos...")
+        print("  Calculando total de arquivos...")
         total_arquivos = calcular_tamanho_pasta(origem)
         
         if total_arquivos == 0:
-            print(" Nenhum arquivo encontrado para backup!")
+            print("  Nenhum arquivo encontrado para backup!")
             return False
         
-        print(f" Total de arquivos a copiar: {total_arquivos}")
+        print(f"  Total de arquivos a copiar: {total_arquivos}")
         
         # Criar estrutura de pastas
         os.makedirs(destino, exist_ok=True)
@@ -122,7 +111,7 @@ def fazer_backup(origem, destino):
         copiados = 0
         erros = 0
         
-        print("\n Iniciando backup...")
+        print("\n ⏳ Iniciando backup...")
         mostrar_barra_progresso(0, total_arquivos)
         
         for root, dirs, files in os.walk(origem):
@@ -147,29 +136,36 @@ def fazer_backup(origem, destino):
         
         # Resultado final
         print("\n" + "="*50)
-        print(" RESUMO DO BACKUP")
+        print("  RESUMO DO BACKUP")
         print("="*50)
-        print(f" Arquivos copiados com sucesso: {copiados}")
-        print(f" Arquivos com erro: {erros}")
-        print(f" Tamanho estimado: {os.path.getsize(origem)/(1024*1024):.2f} MB")
+        print(f"  Arquivos copiados com sucesso: {copiados}")
+        print(f"  Arquivos com erro: {erros}")
+        print(f"  Tamanho estimado: {os.path.getsize(origem)/(1024*1024):.2f} MB")
         print("="*50)
         
         return True
         
     except Exception as e:
-        print(f"\n Erro crítico: {e}")
+        print(f"\n  Erro crítico: {str(e)}")
+        print(" Por favor, verifique as permissões e tente novamente.")
         return False
 
 def main():
     os.system("cls")
     print("\n" + "="*50)
-    print("=== BACKUP DE USUÁRIOS REMOTOS - v1.0 ===")
+    print("=== BACKUP DE USUÁRIOS REMOTOS - v1.1 ===")
     print("="*50)
     
-    # Configuração do usuário administrador.
-    host = input("\n IP/nome do PC (ex: 10.150.7.123/DC01TIN04): ").strip()
-    usuario = input(" Usuário administrador (ex: [USUARIO] ou [USUARIO]@dcoimbra.com.br): ").strip()
-    senha = getpass.getpass(" Senha: ")
+    # Configuração do usuário administrador
+    host = ""
+    while not host:
+        host = input("\n  IP/nome do PC (ex: 10.150.7.123/DC01TIN04): ").strip()
+    
+    usuario = ""
+    while not usuario:
+        usuario = input("  Usuário administrador (ex: [USUARIO] ou [USUARIO]@dcoimbra.com.br): ").strip()
+    
+    senha = getpass.getpass("  Senha: ")
     
     # Conexão
     drive = mapear_unidade(host, usuario, senha)
@@ -182,38 +178,38 @@ def main():
         if not usuarios:
             return
         
-        """ # Seleção
+        # Seleção do usuário
         print("\n" + "-"*50)
-        print("Selecione o usuário que você deseja trazer o backup.")
+        print(" Escolha o usuário para backup:")
         for i, user in enumerate(usuarios, 1):
-            print(f"{i}. {user['nome']} ({user['tamanho']})") """
+            print(f" {i}. {user['nome']} ({user['tamanho']})")
         
         while True:
             try:
-                opcao = int(input("\n Digite o número do usuário para backup: "))
+                opcao = int(input("\n  Digite o número do usuário para backup: "))
                 if 1 <= opcao <= len(usuarios):
                     usuario_selecionado = usuarios[opcao-1]
                     break
-                print(" Número inválido. Tente novamente.")
+                print("  Número inválido. Tente novamente.")
             except ValueError:
-                print(" Digite um número válido.")
+                print("  Por favor, digite um número válido.")
         
-        # Destino
-        destino_base = input("\n Digite a pasta local para salvar o backup (ex: C:\\Backups): ").strip()
+        # Destino do backup
+        destino_base = input("\n  Digite a pasta local para salvar o backup (ex: C:\\Backups): ").strip()
         if not os.path.exists(destino_base):
             os.makedirs(destino_base)
         
         data_hora = datetime.now().strftime('%Y%m%d_%H%M%S')
         destino_final = os.path.join(destino_base, f"Backup_{usuario_selecionado['nome']}_{data_hora}")
         
-        # Executar
+        # Executar backup
         origem = os.path.join(drive, 'Users', usuario_selecionado['nome'])
         fazer_backup(origem, destino_final)
         
     finally:
-        print("\n Desconectando do computador remoto...")
+        print("\n  Desconectando do computador remoto...")
         os.system(f'net use {drive} /delete >nul 2>&1')
-        print(" Operação concluída!\n")
+        print("  Operação concluída!\n")
 
 if __name__ == "__main__":
     main()
