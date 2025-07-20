@@ -73,6 +73,7 @@ def listar_usuarios(drive_letter):
     return usuarios
 
 def calcular_tamanho_pasta(pasta):
+    """Calcula o número total de arquivos e o tamanho total em uma pasta"""
     total_arquivos = 0
     total_tamanho = 0
     for root, dirs, files in os.walk(pasta):
