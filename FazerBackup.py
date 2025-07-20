@@ -118,7 +118,7 @@ def fazer_backup(origem, destino):
         copiados = 0
         erros = 0
         
-        print("\n ⏳ Iniciando backup...")
+        print("\n  Iniciando backup...")
         mostrar_barra_progresso(0, total_arquivos)
         
         for root, dirs, files in os.walk(origem):
@@ -160,7 +160,7 @@ def fazer_backup(origem, destino):
 def main():
     os.system("cls")
     print("\n" + "="*50)
-    print("=== BACKUP DE USUÁRIOS REMOTOS - v1.1 ===")
+    print("=== BACKUP DE USUÁRIOS REMOTOS - v2.0 ===")
     print("="*50)
     
     # Configuração do usuário administrador
