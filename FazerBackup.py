@@ -84,12 +84,14 @@ def calcular_tamanho_pasta(pasta):
                 continue
     return total_arquivos, total_tamanho
 
-def mostrar_barra_progresso(progresso, total, largura=40):
-    """Mostra uma barra de progresso visual"""
-    percentual = progresso / total
+def mostrar_barra_progresso(progresso, total, tamanho_copiado, largura=40):
+    
+    percentual = progresso / total if total > 0 else 0
     barras_preenchidas = int(percentual * largura)
     barra = '█' * barras_preenchidas + '-' * (largura - barras_preenchidas)
-    print(f"\r[{barra}] {percentual:.1%} ({progresso}/{total})", end='', flush=True)
+    tamanho_mb = tamanho_copiado / (1024 * 1024)
+    print(f"\r[{barra}] {percentual:.1%} | Arquivos: {progresso}/{total} | Tamanho: {tamanho_mb:.2f} MB", 
+          end='', flush=True)
     if progresso == total:
         print()
 
